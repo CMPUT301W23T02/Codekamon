@@ -22,7 +22,7 @@ Verb :/…/
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Class: QRcode
-Collaborator: geoLocation, Photo, Camara
+Collaborator: geoLocation, Photo, Camara, Score
 Resposibility:
 	- Can be scanned by User Camara for points
 	- Has a visual representation (i.e a pokemon look)
@@ -35,19 +35,27 @@ Responsibilities:
 	- Used to take photos of QR codes by User
 	- User can add photos 
 
+Class: Photo
+Collaborators: User, Camera, Map
+Responsibilties:
+	- Representation of the QR code
+	- pops up when user clicks on its geolocation on map
+
 Class: geoLocation
-Collaborator: User
+Collaborator: User, Map
 Resposibility: 
 	- Stores the location of a QR codes
 
 Class: User
-Collaborators: QRcode
+Collaborators: QRcode, Camera
 Responsibilities: 
-	- Takes photos of QR codes
+	- Takes photos of QR codes using camera
 
 Class: Map
-Collaborators: QRcode
-Responsibilities: 
+Collaborators: QRcode, geoLocation, Photo
+Responsibilities:
+	- Shows geolocation of QR code,
+	- shows photo when geolocation of photo is clicked
 	- Shows nearby QR codes
 	- Shows the score amount for that QR code
 
