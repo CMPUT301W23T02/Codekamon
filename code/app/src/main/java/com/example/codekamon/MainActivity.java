@@ -21,10 +21,14 @@ public class MainActivity extends AppCompatActivity {
 
     FirebaseFirestore firestore;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        String deviceId = Settings.Secure.getString(this.getContentResolver(),
+                Settings.Secure.ANDROID_ID);
+
 
         getSupportActionBar().hide();
 
@@ -41,8 +45,9 @@ public class MainActivity extends AppCompatActivity {
         scan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Intent intent = new Intent(MainActivity.this, QRCodeScanActivity.class);
-                //intent.putExtra(DEVICE_ID, androidId);
+                intent.putExtra("DEVICE_ID",deviceId);
                 startActivity(intent);
             }
         });
@@ -71,11 +76,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Intent intent = getIntent();
 
         //deviceId -> Needs to be passed to other activities that need the users details
-        String deviceId = Settings.Secure.getString(this.getContentResolver(),
-                Settings.Secure.ANDROID_ID);
+
 
         firestore = FirebaseFirestore.getInstance();
         CollectionReference collectionReference = firestore.collection("Players");

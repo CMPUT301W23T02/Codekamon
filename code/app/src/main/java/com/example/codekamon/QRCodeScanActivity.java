@@ -2,6 +2,7 @@ package com.example.codekamon;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -59,17 +60,21 @@ public class QRCodeScanActivity extends AppCompatActivity {
         stage_one_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Intent intent1 = getIntent();
+                Bundle bundle = intent1.getExtras();
+                String deviceID = bundle.getString("DEVICE_ID");
                 //Toast.makeText(QRCodeScanActivity.this, "stage 1 finished!", Toast.LENGTH_SHORT).show();
-                scannedResult = new QRCode(nameText.getText().toString(), sb.toString());
-                Player player = (Player) getIntent().getSerializableExtra("PLAYER");
-                player.addQR(scannedResult);
+                scannedResult = new QRCode(nameText.getText().toString(), sb.toString(),deviceID);
+                //player.addQR(scannedResult);
+
                 Intent intent = new Intent(QRCodeScanActivity.this, photoTakingActivity.class);
                 //can it be simplified?
-                //intent.putExtra("Name", nameText.getText().toString());
-                //intent.putExtra("sb", sb.toString());
+                intent.putExtra("Name", nameText.getText().toString());
+                intent.putExtra("sb", sb.toString());
+                intent.putExtra("DEVICE_ID",deviceID);
                 //for testing
-                intent.putExtra("Name", "abcd");
-                intent.putExtra("sb", "sb");
+                //intent.putExtra("Name", "abcd");
+                //intent.putExtra("sb", "sb");
                 startActivity(intent);
 
 

@@ -12,6 +12,12 @@ public class QRCode {
     private String content;
     private Bitmap photoSurrounding;
     private String photoAsBytes = "";
+    private String AndroidID;
+
+
+    public String getAndroidID() {
+        return AndroidID;
+    }
 
     public QRCode(String content)
     {
@@ -20,11 +26,13 @@ public class QRCode {
         this.score = calcScore();
     }
 
-    public QRCode(String name, String content)
+    public QRCode(String name, String content, String Id)
     {
         this.name = name;
         this.content = content;
         this.score = calcScore();
+        this.AndroidID = Id;
+
     }
     public String getPhotoAsBytes()
     {

@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -40,6 +41,7 @@ public class photoTakingActivity extends AppCompatActivity {
     private TextView query_text;
     private ImageView photo_show;
     int stage = 0;
+
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     final CollectionReference collectionReference = db.collection("QRCodes");
     final CollectionReference collectionReference2 = db.collection("Images");
@@ -58,7 +60,11 @@ public class photoTakingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.photo_taking);
         Intent intent = getIntent();
-        passedResult = new QRCode(intent.getStringExtra("Name"), intent.getStringExtra("sb"));
+        Bundle bundle = intent.getExtras();
+        String deviceID = bundle.getString("DEVICE_ID");
+        passedResult = new QRCode(intent.getStringExtra("Name"), intent.getStringExtra("sb"),deviceID);
+
+
         yes_button = findViewById(R.id.yes_button);
         no_button = findViewById(R.id.no_button);
         photo_show = findViewById(R.id.photo_show);
