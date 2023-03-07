@@ -17,9 +17,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -44,7 +47,7 @@ public class photoTakingActivity extends AppCompatActivity {
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     final CollectionReference collectionReference = db.collection("QRCodes");
-    final CollectionReference collectionReference2 = db.collection("Images");
+    final CollectionReference collectionReference2 = db.collection("Players");
 
 
     QRCode passedResult;
@@ -63,6 +66,16 @@ public class photoTakingActivity extends AppCompatActivity {
         Bundle bundle = intent.getExtras();
         String deviceID = bundle.getString("DEVICE_ID");
         passedResult = new QRCode(intent.getStringExtra("Name"), intent.getStringExtra("sb"),deviceID);
+        /*collectionReference2.document(deviceID).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+             @Override
+             public void onSuccess(DocumentSnapshot documentSnapshot) {
+                 Player player = documentSnapshot.toObject(Player.class);
+                 player.updateScore();
+
+             }
+         });
+         */
+
 
 
         yes_button = findViewById(R.id.yes_button);
@@ -93,8 +106,15 @@ public class photoTakingActivity extends AppCompatActivity {
                 {
 
                     //upload to db
-                    HashMap<String, QRCode> data = new HashMap<>();
-                    data.put("QRCode content: ", passedResult);
+                    HashMap<String, Object> data = new HashMap<>();
+                    data.put("Name", passedResult.getName());
+                    data.put("Score", passedResult.getScore());
+                    data.put("AndroidID", passedResult.getAndroidID());
+                    data.put("Latitude", passedResult.getLatitude());
+                    data.put("Longitude", passedResult.getLongitude());
+                    data.put("PhotoasBytes", passedResult.getPhotoAsBytes());
+                    data.put("SurroundingPhoto", passedResult.getPhotoSurrounding());
+                    data.put("Content",passedResult.getContent());
                     collectionReference
                             .document(passedResult.getName())
                             .set(data)
@@ -140,6 +160,8 @@ public class photoTakingActivity extends AppCompatActivity {
                 onStageChange();
             }
         });
+
+
     }
 
 
@@ -198,6 +220,24 @@ public class photoTakingActivity extends AppCompatActivity {
             query_text.setText("You earned " + passedResult.getScore() + " points!");
             no_button.setVisibility(View.INVISIBLE);
             yes_button.setText("Return");
+            Intent intent = getIntent();
+            Bundle bundle = intent.getExtras();
+            String deviceID = bundle.getString("DEVICE_ID");
+            collectionReference2.document(deviceID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@androidx.annotation.NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+
+                        if (document.exists()) {
+                            Player player = document.toObject(Player.class);
+                            //player.addQR(passedResult);
+                            player.addQR(passedResult);
+
+                        }
+                    }
+                }});
+
 
         }
     }

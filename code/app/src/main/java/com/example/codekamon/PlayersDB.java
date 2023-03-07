@@ -2,8 +2,10 @@ package com.example.codekamon;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.auth.User;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The PlayersDB class is a controller class to ease manipulation of
@@ -45,5 +47,9 @@ public class PlayersDB {
         data.put("Total Score", player.getTotalScore());
         data.put("ScannedCodes",player.getPlayerCodes());
         playersRef.document(player.getAndroidId()).set(data);
+
+
+
+
     }
 }

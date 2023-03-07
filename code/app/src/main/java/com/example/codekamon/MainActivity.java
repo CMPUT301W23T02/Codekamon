@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 TextView username = findViewById(R.id.username_text);
-                username.setText(task.getResult().get("Username").toString());
+                username.setText(task.getResult().get("userName").toString());
             }
         });
     }

@@ -36,13 +36,18 @@ public class SignUpActivity extends AppCompatActivity  {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference colRef = db.collection("Players");
         colRef.document(androidId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+
+
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
+
                     if (document.exists()) {
                         Log.d("!", "Document exists!");
+                        Player player = document.toObject(Player.class);
                         Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
+                        intent.putExtra("PLAYER", player);
                         intent.putExtra(DEVICE_ID, androidId);
                         startActivity(intent);
                     } else {
@@ -64,7 +69,8 @@ public class SignUpActivity extends AppCompatActivity  {
                                             Toast.makeText(SignUpActivity.this, "Username is taken", Toast.LENGTH_SHORT).show();
                                         }
                                         else {
-                                            new PlayersDB().addPlayer(player);
+                                            //new PlayersDB().addPlayer(player);
+                                            player.saveToDatabase();
                                             Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
                                             intent.putExtra(DEVICE_ID, androidId);
                                             intent.putExtra("PLAYER",player);

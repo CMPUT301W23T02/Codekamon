@@ -1,9 +1,24 @@
 package com.example.codekamon;
 
+import static android.content.ContentValues.TAG;
+
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class Player implements Serializable {
@@ -15,39 +30,97 @@ public class Player implements Serializable {
     Integer totalScore;
     Integer numScanned;
     String androidId;
+    FirebaseFirestore db;
+
+
+    public Player() {
+
+    }
 
     public Player(String userName, String email, String androidId) {
         this.userName = userName;
         this.email = email;
         this.androidId = androidId;
-        highestScore = 0;
-        lowestScore = 0;
-        totalScore = 0;
-        numScanned = 0;
+        this.highestScore = 0;
+        this.lowestScore = -1;
+        this.totalScore = 0;
+        this.numScanned = 0;
+        this.playerCodes = new HashMap<>();
     }
 
+    public void saveToDatabase() {
+        // create Firestore collection
+        final String TAG = "Error";
+        FirebaseFirestore db;
+        db = FirebaseFirestore.getInstance();
+        CollectionReference collectionReference =
+                db.collection("Players");
+
+        collectionReference.document(androidId)
+                .set(this)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        // These are a method which gets executed when the task is succeeded
+                        Log.d(TAG,"Data has been added successfully!");
+                    } // end onSuccess
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // These are a method which gets executed if there’s any problem
+                        Log.d(TAG,"Data could not be added!" + e.toString());
+                    } // end onSuccess
+                });
+    } // end saveToDatabase
 
 
-    public Boolean addQR(QRCode code) {
+
+    public Boolean addQR(QRCode code){
         String name = code.getName();
         String id = code.getContent();
         int score = code.getScore();
-        if (playerCodes.containsValue(id)) {
+        if(playerCodes.containsValue(id)){
             return false;
         }
 
-        if (score > highestScore) {
+        if(score > highestScore){
             highestScore = score;
         }
-        if (score < lowestScore || lowestScore == -1) {
+        if(score < lowestScore || lowestScore == -1){
             lowestScore = score;
         }
         totalScore += score;
         playerCodes.put(name, id);
         numScanned++;
+        updateDatabase();
         return true;
     }
 
+
+    /**
+     * This updates the database with the data contained in the current player object
+     */
+    public void updateDatabase() {
+        // Create Firestore collection
+        FirebaseFirestore db;
+        db = FirebaseFirestore.getInstance();
+        final CollectionReference collectionReference =
+                db.collection("Players");
+        DocumentReference myAccountRef = collectionReference.document(androidId);
+
+        myAccountRef
+                .update("playerCodes", playerCodes);
+        myAccountRef
+                .update("numScanned", numScanned);
+        myAccountRef
+                .update("totalScore", totalScore);
+        myAccountRef
+                .update("highestScore", highestScore);
+        myAccountRef
+                .update("lowestScore", lowestScore);
+
+    } //
     public Boolean deleteQR(QRCode code){
         String name = code.getName();
         if(!playerCodes.containsKey(name)){
