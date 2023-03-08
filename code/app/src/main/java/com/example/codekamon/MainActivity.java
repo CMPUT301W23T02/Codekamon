@@ -57,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Toast.makeText(MainActivity.this, "Clicked the 'leaderboards'", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, leaderBoard.class);
+                intent.putExtra("DEVICE_ID", deviceId);
+                startActivity(intent);
             }
         });
 
@@ -86,8 +89,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 TextView username = findViewById(R.id.username_text);
-                username.setText(task.getResult().get("userName").toString());
-            }
-        });
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+
+                    if (document.exists()) {
+                        Player player = document.toObject(Player.class);
+                        //player.addQR(passedResult);
+                        username.setText(player.getUserName());
+                    }
+                }
+            }});
     }
 }

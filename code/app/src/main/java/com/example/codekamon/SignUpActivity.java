@@ -17,6 +17,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.Serializable;
@@ -34,6 +35,10 @@ public class SignUpActivity extends AppCompatActivity  {
                 Settings.Secure.ANDROID_ID);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setPersistenceEnabled(false)
+                .build();
+        db.setFirestoreSettings(settings);
         CollectionReference colRef = db.collection("Players");
         colRef.document(androidId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
 
