@@ -37,8 +37,13 @@ public class MapsActivityTest {
         Activity activity = rule.getActivity();
     }
 
-    public void checkList(){
+    @Test
+    public void clickItemInTheAdapter(){
+
+        solo.waitForActivity("MapsActivity");
         solo.assertCurrentActivity("Wrong Activity", MapsActivity.class);
+
+
         //implement the other garbage
     }
 
