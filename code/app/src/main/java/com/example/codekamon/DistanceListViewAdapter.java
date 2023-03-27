@@ -1,5 +1,7 @@
 package com.example.codekamon;
 
+import static com.example.codekamon.GeoDistanceCalculator.df;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,18 +13,16 @@ import org.gavaghan.geodesy.GlobalPosition;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
- * <h1>This class "DistanceListViewAdapter" is used to display a cell in the list of the codekamon and its details.
- * @author Elisandro Cruz Martinez
+ * This class "DistanceListViewAdapter" is used to display a cell in the list of the codekamon and its details
+ *
+ * Author: Elisandro Cruz Martinez
  *
  */
-public class DistanceListViewAdapter extends ArrayAdapter<DistancePlayerToTarget> {
+public class DistanceListViewAdapter extends ArrayAdapter<SpaceBetweenPoints> {
 
-    private static final DecimalFormat df = new DecimalFormat("0.0000");
-
-    public DistanceListViewAdapter(Context context, ArrayList<DistancePlayerToTarget> arrayList) {
+    public DistanceListViewAdapter(Context context, ArrayList<SpaceBetweenPoints> arrayList) {
         super(context,0, arrayList);
     }
 
@@ -34,13 +34,13 @@ public class DistanceListViewAdapter extends ArrayAdapter<DistancePlayerToTarget
             viewing = LayoutInflater.from(getContext()).inflate(R.layout.adapter_view_codeby, parent, false);
         }
 
-        DistancePlayerToTarget item = getItem(position);
+        SpaceBetweenPoints item = getItem(position);
 
-        GlobalPosition code_item_position = item.getCodePosition();
+        GlobalPosition code_item_position = item.getLocation();
         Double latitude = code_item_position.getLatitude(), longitude = code_item_position.getLongitude();
 
         TextView txt_code_name = viewing.findViewById(R.id.code_name);
-        txt_code_name.setText(item.get_name());
+        txt_code_name.setText(item.getName());
 
         TextView txt_code_coordinates = viewing.findViewById(R.id.code_coordinates);
 
@@ -48,7 +48,7 @@ public class DistanceListViewAdapter extends ArrayAdapter<DistancePlayerToTarget
         txt_code_coordinates.setText(location);
 
         TextView txt_code_distance = viewing.findViewById(R.id.code_distance);
-        String distance = "Distance: \n" + item.get_distance() + "m";
+        String distance = "Distance: \n" + item.getDistance() + "m";
         txt_code_distance.setText(distance);
 
         return viewing;
