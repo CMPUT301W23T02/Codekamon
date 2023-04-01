@@ -8,9 +8,12 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -19,8 +22,15 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -32,6 +42,18 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * This class handles the logic of scanning process.
  */
 public class QRCodeScanActivity extends AppCompatActivity {
+    /**
+     *  used to get the current location of the player taking photo
+     */
+    private LocationManager locationManager; // Used to get the current location of the player
+    /**
+     *  use to check whether the player has moved from current location
+     */
+    private LocationListener locationListener; // Use to check whether the user has moved a certain amount of distance (meters) in some amount of time (miliseconds).
+    /**
+     *  the current location of player
+     */
+    private LatLng currentLocation = null;
 
     public static final String DEVICE_ID = "com.example.codekamon.DEVICE_ID";
     /**
@@ -88,6 +110,14 @@ public class QRCodeScanActivity extends AppCompatActivity {
         setContentView(R.layout.show_score);
         super.onCreate(savedInstanceState);
 
+        getLocationPermission();
+        // ---Location Permission Request-----
+        // get location permission from user
+        // get current location every 0 mili seconds and for every 0 m
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        // update location when listener catches it. This is synchronous while you are getting code
+        locationListener = location -> currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+        //------------------------------------
         showScoreText = findViewById(R.id.show_score_text);
         stage_one_button = findViewById(R.id.stage_one_button);
         nameText = findViewById(R.id.naming_textframe);
@@ -99,45 +129,35 @@ public class QRCodeScanActivity extends AppCompatActivity {
         showScoreText.setText("Points: " + 1);
 
         //if test, command this.
-
         IntentIntegrator intentIntegrator = new IntentIntegrator(QRCodeScanActivity.this);
         //intentIntegrator.setPrompt("Scan a QR code");
         //intentIntegrator.setOrientationLocked(false);
         intentIntegrator.initiateScan();
-
-
-
         stage_one_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //Toast.makeText(QRCodeScanActivity.this, "stage 1 finished!", Toast.LENGTH_SHORT).show();
                 scannedResult = new QRCode(nameText.getText().toString(), sb.toString());
-
                 Intent intent = new Intent(QRCodeScanActivity.this, photoTakingActivity.class);
                 //can't simplified
                 intent.putExtra("Name", nameText.getText().toString());
                 intent.putExtra("sb", sb.toString());
                 intent.putExtra("visual", generatedImage);
-
-
+                if(currentLocation != null) {
+                    intent.putExtra("locationLong", currentLocation.longitude);
+                    intent.putExtra("locationLati", currentLocation.latitude);
+                }
+                else{
+                    intent.putExtra("locationLong", 0.0);
+                    intent.putExtra("locationLati",0.0);
+                }
                 //for testing
                 //intent.putExtra("Name", "abcd");
                 //intent.putExtra("sb", "sb");
                 startActivity(intent);
-
-
             }
         });
-
-
-
-
-
-
-
     }
-
-
     /**
      * onAcitvity result is called when an activity is called and executed.
      *
@@ -146,8 +166,7 @@ public class QRCodeScanActivity extends AppCompatActivity {
      * @param data intent returns to the caller.
      */
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-    {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         Toast.makeText(getBaseContext(), "Scanned", Toast.LENGTH_SHORT).show();
         QRCodeScanActivity.super.onActivityResult(requestCode,resultCode,data);
         IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
@@ -206,15 +225,29 @@ public class QRCodeScanActivity extends AppCompatActivity {
                     //System.out.println("------------------" + scanResult +"---------------------");
                     //System.out.println("------------------" + sb.toString() +"---------------------");
                     scannedResult = new QRCode(sb.toString());
-
                     showScoreText.setText("Points: " + scannedResult.getScore());
-
-
                 }
             }
-
-
         }
+    }
+    private void getLocationPermission() {
+        // get location permission
+        Dexter.withActivity(this).withPermission(android.Manifest.permission.ACCESS_FINE_LOCATION).withListener(new PermissionListener() {
+            @Override
+            public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
+                // check if permission has truly been granted
+                if (ActivityCompat.checkSelfPermission(getBaseContext(), android.Manifest.permission.ACCESS_FINE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getBaseContext(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 1, locationListener);
+            }
+            @Override
+            public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {}
+            @Override
+            public void onPermissionRationaleShouldBeShown(PermissionRequest permissionRequest, PermissionToken permissionToken) {permissionToken.continuePermissionRequest();}
+        }).check();
     }
 }
 

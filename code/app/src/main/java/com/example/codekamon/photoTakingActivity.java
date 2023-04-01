@@ -57,18 +57,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class photoTakingActivity extends AppCompatActivity {
     /**
-     *  used to get the current location of the player taking photo
-     */
-    private LocationManager locationManager; // Used to get the current location of the player
-    /**
-     *  use to check whether the player has moved from current location
-     */
-    private LocationListener locationListener; // Use to check whether the user has moved a certain amount of distance (meters) in some amount of time (miliseconds).
-    /**
-     *  the current location of player
-     */
-    private LatLng currentLocation = null;
-    /**
      * the button for yes responses.
      */
     private Button yes_button;
@@ -112,14 +100,6 @@ public class photoTakingActivity extends AppCompatActivity {
         stage = 0;
         super.onCreate(savedInstanceState);
 
-        // ---Location Permission Request-----
-        // get location permission from user
-        getLocationPermission();
-        // get current location every 0 mili seconds and for every 0 m
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        // update location when listener catches it. This is synchronous while you are getting code
-        locationListener = location -> currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-        //------------------------------------
 
         setContentView(R.layout.photo_taking);
         Intent intent = getIntent();
@@ -142,8 +122,8 @@ public class photoTakingActivity extends AppCompatActivity {
                     startActivityForResult(intent, 1);
                 } else if (stage == 1) {
                     Toast.makeText(photoTakingActivity.this, "recording location...", Toast.LENGTH_SHORT).show();
-                    double lati = (currentLocation != null) ? currentLocation.latitude : 0.0;
-                    double longi = (currentLocation != null) ? currentLocation.longitude: 0.0;
+                    double lati = Double.parseDouble(intent.getStringExtra("locationLati"));
+                    double longi = Double.parseDouble(intent.getStringExtra("locationLong"));
                     passedResult.setLocation(lati, longi);
                     stage++;
                     onStageChange();
@@ -301,23 +281,4 @@ public class photoTakingActivity extends AppCompatActivity {
     /**
      * "getLocationPermission" requests the user to allow the use of their location
      */
-    private void getLocationPermission() {
-        // get location permission
-        Dexter.withActivity(this).withPermission(android.Manifest.permission.ACCESS_FINE_LOCATION).withListener(new PermissionListener() {
-            @Override
-            public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
-                // check if permission has truly been granted
-                if (ActivityCompat.checkSelfPermission(getBaseContext(), android.Manifest.permission.ACCESS_FINE_LOCATION)
-                        != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getBaseContext(),
-                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    return;
-                }
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 1, locationListener);
-            }
-            @Override
-            public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {}
-            @Override
-            public void onPermissionRationaleShouldBeShown(PermissionRequest permissionRequest, PermissionToken permissionToken) {permissionToken.continuePermissionRequest();}
-        }).check();
-    }
 }
